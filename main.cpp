@@ -46,6 +46,11 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
         return 0;
 
     /* The class is registered, let's create the program*/
+
+    RECT winRect;
+    SetRect(&winRect, 0, 0, 391, 307); // On met comme taille initiale celle du Bitmap
+    AdjustWindowRect(&winRect, WS_OVERLAPPEDWINDOW, false);
+
     hwnd = CreateWindowEx (
            0,                   /* Extended possibilites for variation */
            szClassName,         /* Classname */
@@ -53,8 +58,8 @@ int WINAPI WinMain (HINSTANCE hThisInstance,
            WS_OVERLAPPEDWINDOW, /* default window */
            CW_USEDEFAULT,       /* Windows decides the position */
            CW_USEDEFAULT,       /* where the window ends up on the screen */
-           544,                 /* The programs width */
-           375,                 /* and height in pixels */
+           winRect.right-winRect.left,  /* The programs width */
+           winRect.bottom-winRect.top,  /* and height in pixels */
            HWND_DESKTOP,        /* The window is a child-window to desktop */
            NULL,                /* No menu */
            hThisInstance,       /* Program Instance handler */
@@ -85,48 +90,61 @@ LRESULT CALLBACK WindowProcedure (HWND hwnd, UINT message, WPARAM wParam, LPARAM
     static HBITMAP bmp1(LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(baynlEuhbItmHappeuNn)));
     static HBITMAP bmp2(LoadBitmap(GetModuleHandle(NULL), MAKEINTRESOURCE(baynlEuhbItmHappedEuu)));
     static bool TouchePressee=false;
-    switch (message)                  /* handle the messages */
-    {
-        case WM_DESTROY:
-            PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
-            break;
-            case WM_PAINT:
-            {
-                BITMAP bm;
-                PAINTSTRUCT ps;
+    static POINT winSize;
+    switch (message) {/* handle the messages */
+    // System Messages
+    case WM_CREATE:
 
-                HDC hdc = BeginPaint(hwnd, &ps);
+        break;
+    case WM_DESTROY:
+        PostQuitMessage (0);       /* send a WM_QUIT to the message queue */
+        break;
+    case WM_PAINT: {
+        //BITMAP bm; Le nom est très mal choisi. C'est juste une structure contenant des infos...
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
 
-                HDC hdcMem = CreateCompatibleDC(hdc);
-                HBITMAP hbmOld;
-                if(!TouchePressee) {
-                    hbmOld = (HBITMAP)SelectObject(hdcMem, bmp1);
+        HDC hdcMem = CreateCompatibleDC(hdc);
+        HBITMAP hbmOld; // On pourra s'en passer
+        hbmOld = (HBITMAP)SelectObject(hdcMem, TouchePressee?bmp2:bmp1);
+        //GetObject(bmp2, sizeof(bm), &bm);
 
-                    GetObject(bmp1, sizeof(bm), &bm);
-                } else {
-                    hbmOld = (HBITMAP)SelectObject(hdcMem, bmp2);
+        StretchBlt(hdc, 0, 0, winSize.x, winSize.y, hdcMem, 0, 0, 391, 307, SRCCOPY); // Faut essayer avec SRCINVERT
 
-                    GetObject(bmp2, sizeof(bm), &bm);
-                }
-                BitBlt(hdc, 0, 0, bm.bmWidth, bm.bmHeight, hdcMem, 0, 0, SRCCOPY);
+        SelectObject(hdcMem, hbmOld);
+        DeleteDC(hdcMem);
 
-                SelectObject(hdcMem, hbmOld);
-                DeleteDC(hdcMem);
+        EndPaint(hwnd, &ps);
+        }break;
+    case WM_ERASEBKGND:
+        return false; // Permet d'éviter le scintillement quand on redimensionne
+        break;
 
-                EndPaint(hwnd, &ps);
-            }
-            break;
-            case WM_KEYDOWN:
-                TouchePressee=true;
-                RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE);
-            break;
-            case WM_KEYUP:
-                TouchePressee=false;
-                RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE);
-
-            break;
-        default:                      /* for messages that we don't deal with */
-            return DefWindowProc (hwnd, message, wParam, lParam);
+    // Input
+    case WM_KEYDOWN:
+        TouchePressee=true;
+        RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE);
+        break;
+    case WM_KEYUP:
+        TouchePressee=false;
+        RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE);
+        break;
+    case WM_SIZE:
+        winSize.x=LOWORD(lParam);
+        winSize.y=HIWORD(lParam);
+        RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE);
+        break;
+    case WM_SIZING:{
+        RECT winRect=*(RECT*)lParam, marginRect;
+        SetRect(&marginRect, 0, 0, 0, 0);
+        AdjustWindowRect(&marginRect, WS_OVERLAPPEDWINDOW, false);
+        winSize.x=winRect.right-winRect.left-(marginRect.right-marginRect.left);
+        winSize.y=winRect.bottom-winRect.top-(marginRect.bottom-marginRect.top);
+        RedrawWindow(hwnd,NULL,NULL,RDW_INVALIDATE);
+        //MessageBox(hwnd, "Taille : " + winSize.x, "Pouet", MB_ICONHAND);
+        }break;
+    default:                      /* for messages that we don't deal with */
+        return DefWindowProc (hwnd, message, wParam, lParam);
     }
 
     return 0;
