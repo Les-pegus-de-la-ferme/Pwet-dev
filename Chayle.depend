@@ -1,0 +1,21 @@
+# depslib dependency file v1.0
+1424445026 source:u:\prive\chayle\main.cpp
+	<tchar.h>
+	<windows.h>
+	"rscs.h"
+
+1424443989 source:u:\prive\chayle\rscs.rc
+	"rscs.h"
+
+1424443936 u:\prive\chayle\rscs.h
+
+1424454763 source:c:\users\alexandre\programmation\chayle\main.cpp
+	<tchar.h>
+	<windows.h>
+	"rscs.h"
+
+1424454763 c:\users\alexandre\programmation\chayle\rscs.h
+
+1424454763 source:c:\users\alexandre\programmation\chayle\rscs.rc
+	"rscs.h"
+
