@@ -19,3 +19,13 @@
 1424454763 source:c:\users\alexandre\programmation\chayle\rscs.rc
 	"rscs.h"
 
+1424512717 source:c:\users\alexandre\programmation\pwet\main.cpp
+	<tchar.h>
+	<windows.h>
+	"rscs.h"
+
+1424512717 c:\users\alexandre\programmation\pwet\rscs.h
+
+1424512717 source:c:\users\alexandre\programmation\pwet\rscs.rc
+	"rscs.h"
+
